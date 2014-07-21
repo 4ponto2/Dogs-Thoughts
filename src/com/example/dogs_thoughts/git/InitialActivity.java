@@ -20,7 +20,7 @@ public class InitialActivity extends Activity {
 
     public void init()
     {
-//    	mainActivity = new Intent(getApplicationContext(), CameraActivity.class);
+    	mainActivity = new Intent(getApplicationContext(), CameraActivity.class);
         wasExecuted = false;
     }
 
