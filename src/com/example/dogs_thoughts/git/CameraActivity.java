@@ -1,18 +1,32 @@
 package com.example.dogs_thoughts.git;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.ShutterCallback;
+import android.opengl.Visibility;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.View.OnTouchListener;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 
-public class CameraActivity extends Activity {
+public class CameraActivity extends Activity implements OnTouchListener {
 
 
 	    static Camera mCamera;
@@ -23,7 +37,11 @@ public class CameraActivity extends Activity {
 		public static final int HORIZONTAL=0;
 		public static final int VERTICAL=1;
 		public int w,h;
-		boolean executou = false;    
+		boolean executou = false;
+		
+		private Intent ShareActivity;
+	    
+	    private String local_foto;
 		
 		@Override
 	    public void onCreate(Bundle savedInstanceState) {
@@ -45,7 +63,66 @@ public class CameraActivity extends Activity {
 	       
 	        orientation=1;
 	        
+	        ImageView imageView = (ImageView)findViewById(R.id.id_camera_preview_front);
+	        imageView.setOnTouchListener(this);
+	        imageView.setVisibility(View.VISIBLE);
+	        
+	        ImageButton captureButton = (ImageButton) findViewById(R.id.photoButton);
+	        captureButton.setOnClickListener(new View.OnClickListener() {
+	            @Override
+	            public void onClick(View v) {
+	                TirarFoto();
+	            }
+	        });	        
+	        
 	    }
+		
+
+		private float preX = 0;
+		private float preY = 0;		
+
+		private String TAG = "CameraActivity";
+		
+		@SuppressLint("ClickableViewAccessibility")
+		public boolean onTouch(View v, MotionEvent event) {
+			Log.d(TAG, TAG + "X, Y is : " + event.getRawX() + ", " + event.getRawY());
+			Log.d(TAG, TAG + "vX, vY is : " + v.getX() + ", " + v.getY());
+			Log.d(TAG, TAG + ".......................");
+			
+			if(event.getAction() == MotionEvent.ACTION_DOWN) {
+				preX = event.getRawX();
+				preY = event.getRawY();
+				return true;
+			}
+			if(event.getAction() == MotionEvent.ACTION_UP) {
+				float newX = v.getX() + (event.getRawX() - preX);
+				float newY = v.getY() + (event.getRawY() - preY);
+				v.setX(newX);
+				v.setY(newY);
+				preX = event.getRawX();
+				preY = event.getRawY();
+				
+			}
+			if(event.getAction() == MotionEvent.ACTION_MOVE) {
+				float newX = v.getX() + (event.getRawX() - preX);
+				float newY = v.getY() + (event.getRawY() - preY);
+
+				if(newX < mPreview.getX())
+					newX = mPreview.getX();
+				if(newY < mPreview.getY())
+					newY = mPreview.getY();
+				if(newX > mPreview.getX() + mPreview.getWidth() - v.getWidth())
+					newX = mPreview.getX() + mPreview.getWidth() - v.getWidth();
+				if(newY > mPreview.getY() + mPreview.getHeight() - v.getHeight())
+					newY = mPreview.getY() + mPreview.getHeight() - v.getHeight();
+				
+				v.setX(newX);
+				v.setY(newY);
+				preX = event.getRawX();
+				preY = event.getRawY();
+			}
+			return true;
+		}		
 
 		protected void onResume() {
 			super.onResume();
@@ -62,17 +139,21 @@ public class CameraActivity extends Activity {
 	    	}
 		};
 		
-		PictureCallback rawCallback = new PictureCallback() {
-			public void onPictureTaken(byte[] data, Camera camera) {
-				Log.d("rawCallBack", "onPictureTaken - raw");
-			}
-		};	    
-		    
 		PictureCallback mPicture = new PictureCallback(){		
 			public void onPictureTaken(byte[] data, Camera camera) {
-				releaseCamera();
+				try{
+					Log.d("FOTO", "onPictureTaken");
+					salvafoto(data,camera);
+					releaseCamera();
+					chamaShare();
+					
+				}catch(Error e){
+					Log.d("FOTO ERRO", "ERRO");
+					releaseCamera();
+					
+				}
 			}
-		};
+		};		
 		
 	    private void releaseCamera() {
 			 if (mCamera != null){
@@ -96,5 +177,48 @@ public class CameraActivity extends Activity {
 	        }
 	        return c;
 	    }
+	    
+	    public void salvafoto(byte[] data, Camera camera) {
+	          File pictureFile = getOutputMediaFile();
+	          Log.i("LOCAL", "MEDIAFILE: " + pictureFile);
+	          	if (pictureFile == null) {
+	                return;
+	            }
+	            try {
+	                FileOutputStream fos = new FileOutputStream(pictureFile);
+	                fos.write(data);
+	                fos.close();
+	                releaseCamera();
+	                local_foto = pictureFile.toString();
+	                Log.i("LOCAL_FOTO", "TO STRING: " + local_foto);
+	            } catch (FileNotFoundException e) {
+
+	            } catch (IOException e) {
+	            }
+	    }	    
+	    
+	    private static File getOutputMediaFile() {
+	        File mediaStorageDir = new File(
+	                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+	                "Dog's Toughts");
+	        if (!mediaStorageDir.exists()) {
+	            if (!mediaStorageDir.mkdirs()) {
+	                Log.d("MyCameraApp", "failed to create directory");
+	                return null;
+	            }
+	        }
+	        // Create a media file name
+	        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date());
+	        File mediaFile;
+	        mediaFile = new File(mediaStorageDir.getPath() + File.separator
+	                + "IMG_" + timeStamp + ".jpg");
+
+	        return mediaFile;
+	    }	
+	    
+	    public void chamaShare(){
+//	    	ShareActivity.putExtra("Foto_Local", local_foto);
+//	        startActivity(ShareActivity);	        
+	    }	    
 
 	}
