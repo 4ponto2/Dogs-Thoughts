@@ -31,7 +31,10 @@ public class CameraActivity extends Activity implements OnTouchListener {
 
 	    static Camera mCamera;
 	    private Camera_preview mPreview;
-	    FrameLayout preview;
+	    private FrameLayout preview;
+	    private Intent ShareActivity;
+	    
+	    private String local_foto;
 	    
 	    public static int orientation;
 		public static final int HORIZONTAL=0;
@@ -39,11 +42,7 @@ public class CameraActivity extends Activity implements OnTouchListener {
 		public int w,h;
 		boolean executou = false;
 		
-		private Intent ShareActivity;
-	    
-	    private String local_foto;
-		
-		@Override
+	    @Override
 	    public void onCreate(Bundle savedInstanceState) {
 	        super.onCreate(savedInstanceState);
 	        
@@ -53,6 +52,9 @@ public class CameraActivity extends Activity implements OnTouchListener {
 	        
 	        setContentView(R.layout.activity_camera);
 	        w=h=0;
+	        
+	        ShareActivity = new Intent(getApplicationContext(), ShareActivity.class);
+	        
 	        // Create an instance of Camera
 	        mCamera = getCameraInstance();
 	      
@@ -217,8 +219,8 @@ public class CameraActivity extends Activity implements OnTouchListener {
 	    }	
 	    
 	    public void chamaShare(){
-//	    	ShareActivity.putExtra("Foto_Local", local_foto);
-//	        startActivity(ShareActivity);	        
+	    	ShareActivity.putExtra("Foto_Local", local_foto);
+	        startActivity(ShareActivity);	        
 	    }	    
 
 	}
