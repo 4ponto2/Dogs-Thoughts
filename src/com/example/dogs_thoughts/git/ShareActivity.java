@@ -11,16 +11,21 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnTouchListener;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ShareActionProvider;
 
-public class ShareActivity extends Activity {
+public class ShareActivity extends Activity implements OnTouchListener{
 
 	private Intent camera;
 	private boolean wasExecuted;
 	private String localFoto;
 	private File imgFile;
 	private Uri uri;
+	private ImageView myImage,imageView;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -41,11 +46,62 @@ public class ShareActivity extends Activity {
 
 	    	Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
 
-	    	ImageView myImage = (ImageView) findViewById(R.id.ImageFoto);
+	    	myImage = (ImageView) findViewById(R.id.ImageFoto);
 	        myImage.setImageBitmap(myBitmap);
+	        myImage.setRotation(90);
 
 	    }
+	    
+	    imageView = (ImageView)findViewById(R.id.dog_talk);
+        imageView.setOnTouchListener(this);
+        imageView.bringToFront();
+        imageView.setVisibility(View.VISIBLE);	    
 	}
+	
+	private float preX = 0;
+	private float preY = 0;		
+	
+	private String TAG = "CameraActivity";
+	
+	public boolean onTouch(View v, MotionEvent event) {
+		Log.d(TAG, TAG + "X, Y is : " + event.getRawX() + ", " + event.getRawY());
+		Log.d(TAG, TAG + "vX, vY is : " + v.getX() + ", " + v.getY());
+		Log.d(TAG, TAG + ".......................");
+		
+		if(event.getAction() == MotionEvent.ACTION_DOWN) {
+			preX = event.getRawX();
+			preY = event.getRawY();
+			return true;
+		}
+		if(event.getAction() == MotionEvent.ACTION_UP) {
+			float newX = v.getX() + (event.getRawX() - preX);
+			float newY = v.getY() + (event.getRawY() - preY);
+			v.setX(newX);
+			v.setY(newY);
+			preX = event.getRawX();
+			preY = event.getRawY();
+			
+		}
+		if(event.getAction() == MotionEvent.ACTION_MOVE) {
+			float newX = v.getX() + (event.getRawX() - preX);
+			float newY = v.getY() + (event.getRawY() - preY);
+
+			if(newX < myImage.getX())
+				newX = myImage.getX();
+			if(newY < myImage.getY())
+				newY = myImage.getY();
+			if(newX > myImage.getX() + myImage.getWidth() - v.getWidth())
+				newX = myImage.getX() + myImage.getWidth() - v.getWidth();
+			if(newY > myImage.getY() + myImage.getHeight() - v.getHeight())
+				newY = myImage.getY() + myImage.getHeight() - v.getHeight();
+			
+			v.setX(newX);
+			v.setY(newY);
+			preX = event.getRawX();
+			preY = event.getRawY();
+		}
+		return true;
+	}		
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {

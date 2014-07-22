@@ -63,7 +63,7 @@ public class CameraActivity extends Activity implements OnTouchListener {
 	        preview = (FrameLayout) findViewById(R.id.camera_preview);
 	        preview.addView(mPreview);
 	       
-	        orientation=1;
+	        orientation=0;
 	        
 	        ImageView imageView = (ImageView)findViewById(R.id.id_camera_preview_front);
 	        imageView.setOnTouchListener(this);
