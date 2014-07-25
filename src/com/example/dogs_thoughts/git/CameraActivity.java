@@ -4,15 +4,20 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.ShutterCallback;
+import android.media.ExifInterface;
 import android.opengl.Visibility;
 import android.os.Bundle;
 import android.os.Environment;
@@ -26,7 +31,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
-public class CameraActivity extends Activity implements OnTouchListener {
+public class CameraActivity extends Activity{
 
 
 	    static Camera mCamera;
@@ -65,76 +70,16 @@ public class CameraActivity extends Activity implements OnTouchListener {
 	       
 	        orientation=0;
 	        
-	        ImageView imageView = (ImageView)findViewById(R.id.id_camera_preview_front);
-	        imageView.setOnTouchListener(this);
-	        imageView.setVisibility(View.VISIBLE);
-	        
 	        ImageButton captureButton = (ImageButton) findViewById(R.id.photoButton);
 	        captureButton.setOnClickListener(new View.OnClickListener() {
 	            @Override
 	            public void onClick(View v) {
-	                TirarFoto();
+	            	mCamera.takePicture(shutterCallback, null, mPicture);
 	            }
 	        });	        
 	        
 	    }
-		
 
-		private float preX = 0;
-		private float preY = 0;		
-
-		private String TAG = "CameraActivity";
-		
-		@SuppressLint("ClickableViewAccessibility")
-		public boolean onTouch(View v, MotionEvent event) {
-			Log.d(TAG, TAG + "X, Y is : " + event.getRawX() + ", " + event.getRawY());
-			Log.d(TAG, TAG + "vX, vY is : " + v.getX() + ", " + v.getY());
-			Log.d(TAG, TAG + ".......................");
-			
-			if(event.getAction() == MotionEvent.ACTION_DOWN) {
-				preX = event.getRawX();
-				preY = event.getRawY();
-				return true;
-			}
-			if(event.getAction() == MotionEvent.ACTION_UP) {
-				float newX = v.getX() + (event.getRawX() - preX);
-				float newY = v.getY() + (event.getRawY() - preY);
-				v.setX(newX);
-				v.setY(newY);
-				preX = event.getRawX();
-				preY = event.getRawY();
-				
-			}
-			if(event.getAction() == MotionEvent.ACTION_MOVE) {
-				float newX = v.getX() + (event.getRawX() - preX);
-				float newY = v.getY() + (event.getRawY() - preY);
-
-				if(newX < mPreview.getX())
-					newX = mPreview.getX();
-				if(newY < mPreview.getY())
-					newY = mPreview.getY();
-				if(newX > mPreview.getX() + mPreview.getWidth() - v.getWidth())
-					newX = mPreview.getX() + mPreview.getWidth() - v.getWidth();
-				if(newY > mPreview.getY() + mPreview.getHeight() - v.getHeight())
-					newY = mPreview.getY() + mPreview.getHeight() - v.getHeight();
-				
-				v.setX(newX);
-				v.setY(newY);
-				preX = event.getRawX();
-				preY = event.getRawY();
-			}
-			return true;
-		}		
-
-		protected void onResume() {
-			super.onResume();
-		}
-	    
-	    private void TirarFoto(){
-//	    	mCamera.takePicture(null, null, mPicture);
-	        mCamera.takePicture(shutterCallback, null, mPicture);        
-	    }
-	    
 	    ShutterCallback shutterCallback = new ShutterCallback() {
 	    	public void onShutter() {
 	    		Log.d("FOTO", "onShutter'd");
@@ -164,11 +109,6 @@ public class CameraActivity extends Activity implements OnTouchListener {
 		        }
 		} 
 	    
-	    public void onBackPressed()
-	    {
-
-	    }
-	    
 	    public static Camera getCameraInstance(){
 	        Camera c = null;
 	        try {
@@ -197,7 +137,8 @@ public class CameraActivity extends Activity implements OnTouchListener {
 
 	            } catch (IOException e) {
 	            }
-	    }	    
+	    }
+	    
 	    
 	    private static File getOutputMediaFile() {
 	        File mediaStorageDir = new File(
@@ -223,4 +164,32 @@ public class CameraActivity extends Activity implements OnTouchListener {
 	        startActivity(ShareActivity);	        
 	    }	    
 
+	    
+	    
+	    public void Salva(Bitmap result) 
+	    { 
+	    	File file = null;
+//	    	String PATH = Environment.getExternalStorageDirectory().toString();
+	    	if(result!=null){
+	    		// TODO Auto-generated method stub
+				OutputStream outStream = null;
+//				File file = new File(PATH, "sampleimage4.jpg");
+				file = new File(local_foto);
+				Log.i("LOCAL", "LOCAL: " + file);
+				try{
+					outStream = new FileOutputStream(file);
+					result.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
+					outStream.flush();
+					outStream.close();
+					
+				}catch (FileNotFoundException e){
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					
+				}catch (IOException e){
+//					TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+	    }	    
 	}

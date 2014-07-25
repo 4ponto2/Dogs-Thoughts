@@ -39,7 +39,6 @@ public class Camera_preview extends SurfaceView implements SurfaceHolder.Callbac
             Log.d("surface created", "Error setting camera preview: " + e.getMessage());
         }
     }
-
    
     public void surfaceDestroyed(SurfaceHolder holder) {
         // empty. Take care of releasing the Camera preview in your activity.
@@ -76,12 +75,11 @@ public class Camera_preview extends SurfaceView implements SurfaceHolder.Callbac
             if(w<h){
             	Log.i("Camera_Preview", "se W < H");
             	mCamera.setDisplayOrientation(90);
-//    	    	CameraActivity.orientation=CameraActivity.VERTICAL;
+    	    	CameraActivity.orientation=CameraActivity.VERTICAL;
             }else {
             	Log.i("Camera_Preview", "se W <> H");
-            	mCamera.setDisplayOrientation(90);
-//          	CameraActivity.orientation=CameraActivity.VERTICAL;
-//          	mCamera.setDisplayOrientation(0);
+          	CameraActivity.orientation=CameraActivity.VERTICAL;
+          	mCamera.setDisplayOrientation(0);
 //          	CameraActivity.orientation=CameraActivity.HORIZONTAL;
             }
             mHolder.setSizeFromLayout();
